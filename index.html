@@ -3,77 +3,442 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Vật Lý 10</title>
+    <title>Sâu Luyện Lý 10 - Bài 13</title>
     <style>
-        /* CSS trang trí game ở đây (tuỳ chỉnh giao diện cho đẹp) */
-        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f9; padding: 20px; }
-        .game-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        button { background: #5c6bc0; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            width: 100%;
+            max-width: 800px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            color: #2563eb;
+        }
+
+        .question-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e3a8a;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+        }
+
+        #game-board {
+            width: 100%;
+            height: 400px;
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .snake-head {
+            width: 24px;
+            height: 24px;
+            background-color: #10b981;
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+            z-index: 10;
+            transition: background-color 0.2s;
+        }
+
+        .snake-node {
+            width: 18px;
+            height: 18px;
+            background-color: #34d399;
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 9;
+        }
+
+        .food-item {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            border: 2px solid #94a3b8;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 260px;
+            text-align: center;
+            white-space: normal;
+            pointer-events: none;
+            transition: border-color 0.2s;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            z-index: 20;
+        }
+
+        .btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .instructions {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <h2>Game Vận Dụng Vật Lý 10</h2>
-        <div id="question-box">Đang tải câu hỏi...</div>
-        <div id="answer-buttons"></div>
-        <button id="next-btn" onclick="nextQuestion()">Câu tiếp theo</button>
+<div class="game-card">
+    <div class="header">
+        <h2 style="font-size: 1.25rem; color: #0f172a;">Vật Lý 10 - Bài 13</h2>
+        <div class="stats-container">
+            <div class="stat-box">Điểm: <span id="score" class="stat-value">0</span></div>
+            <div class="stat-box">Lỗi: <span id="wrongs" class="stat-value" style="color: #ef4444;">0/2</span></div>
+            <div class="stat-box">Kỷ lục: <span id="high-score" class="stat-value">0</span></div>
+        </div>
     </div>
 
-    <script>
-        // 1. NHÚNG TRỰC TIẾP CÂU HỎI VÀO ĐÂY (Không cần gọi file ngoài)
-        const questions = [
-            {
-                question: "Câu 1: Chuyển động cơ là gì?",
-                answers: ["Sự thay đổi vị trí của vật này so với vật khác theo thời gian", "Sự thay đổi hình dạng của vật", "Sự đứng yên của vật", "Cả 3 ý trên đều sai"],
-                correct: 0
-            },
-            {
-                question: "Câu 2: Vận tốc tức thời cho biết điều gì?",
-                answers: ["Quãng đường đi được", "Tốc độ nhanh hay chậm tại một thời điểm", "Hướng chuyển động", "Cả tốc độ và hướng chuyển động"],
-                correct: 3
-            }
-            // Bạn có thể thêm nhiều câu hỏi nữa vào đây...
-        ];
+    <div id="question" class="question-box">Bấm "Bắt đầu" để bắt đầu trò chơi!</div>
 
-        let currentQuestionIndex = 0;
-        const questionBox = document.getElementById("question-box");
-        const answerButtons = document.getElementById("answer-buttons");
+    <div id="game-board">
+        <div id="overlay" class="overlay">
+            <h1 id="overlay-title" style="color: #0f172a;">Sâu Ăn Đáp Án Lý 10</h1>
+            <p id="overlay-msg" class="instructions">Di chuột trên vùng chơi để điều khiển chú sâu ăn đáp án đúng!</p>
+            <button id="start-btn" class="btn" onclick="startGame()">Bắt đầu chơi</button>
+        </div>
+        <div id="snake-head" class="snake-head" style="display: none;"></div>
+    </div>
 
-        function showQuestion() {
-            let q = questions[currentQuestionIndex];
-            questionBox.innerHTML = `<h3>${q.question}</h3>`;
-            answerButtons.innerHTML = "";
+    <div class="instructions">
+        💡 Tránh chọn sai quá 2 lần. Tốc độ di chuyển của sâu sẽ gia tăng theo điểm số!
+    </div>
+</div>
+
+<script>
+    const questionBank = [
+        {
+            q: "Tổng hợp lực là gì?",
+            correct: "Thay thế nhiều lực bằng một lực tương đương",
+            wrongs: ["Chia một lực thành nhiều lực", "Triệt tiêu tất cả các lực tác dụng", "Tăng độ lớn của các lực tác dụng"]
+        },
+        {
+            q: "Lực thay thế nhiều lực gọi là gì?",
+            correct: "Hợp lực",
+            wrongs: ["Lực thành phần", "Trọng lực", "Lực ma sát"]
+        },
+        {
+            q: "Hai lực cùng chiều có hợp lực bằng bao nhiêu?",
+            correct: "F = F1 + F2",
+            wrongs: ["F = |F1 - F2|", "F = √(F1² + F2²)", "F = 0"]
+        },
+        {
+            q: "Hai lực ngược chiều có hợp lực bằng bao nhiêu?",
+            correct: "F = |F1 - F2|",
+            wrongs: ["F = F1 + F2", "F = √(F1² + F2²)", "F = F1 × F2"]
+        },
+        {
+            q: "Hai lực vuông góc có hợp lực tính thế nào?",
+            correct: "F = √(F1² + F2²)",
+            wrongs: ["F = F1 + F2", "F = F1 - F2", "F = (F1 + F2)/2"]
+        },
+        {
+            q: "Đơn vị của lực là gì?",
+            correct: "Newton (N)",
+            wrongs: ["Joule (J)", "Watt (W)", "Kilogram (kg)"]
+        },
+        {
+            q: "Phân tích lực là gì?",
+            correct: "Thay một lực bằng các lực thành phần",
+            wrongs: ["Cộng nhiều lực thành một lực", "Tính độ lớn trọng lực", "Làm mất lực tác dụng"]
+        },
+        {
+            q: "Khi nào vật cân bằng?",
+            correct: "Khi hợp lực bằng 0",
+            wrongs: ["Khi chỉ có 1 lực tác dụng", "Khi hợp lực có giá trị cực đại", "Khi vật chuyển động nhanh dần"]
+        },
+        {
+            q: "Hai lực cân bằng có đặc điểm gì?",
+            correct: "Cùng phương, ngược chiều, cùng độ lớn",
+            wrongs: ["Cùng phương, cùng chiều, cùng độ lớn", "Khác phương, ngược chiều, cùng độ lớn", "Cùng phương, ngược chiều, khác độ lớn"]
+        },
+        {
+            q: "Nếu F1, F2 vuông góc nhau, hợp lực bằng bao nhiêu?",
+            correct: "5 N",
+            wrongs: ["7 N", "1 N", "12 N"]
+        }
+    ];
+
+    let score = 0;
+    let wrongCount = 0;
+    let highScore = localStorage.getItem('snake_physics_highscore') || 0;
+    let isPlaying = false;
+
+    let mouseX = 200, mouseY = 200;
+    let snakeX = 200, snakeY = 200;
+    let snakeSpeed = 0.05;
+    const snakeBody = [];
+    const bodyLength = 6;
+
+    let currentQuestion = null;
+    let foodElements = [];
+    let animationFrameId = null;
+
+    const board = document.getElementById('game-board');
+    const snakeHead = document.getElementById('snake-head');
+    const questionEl = document.getElementById('question');
+    const scoreEl = document.getElementById('score');
+    const wrongsEl = document.getElementById('wrongs');
+    const highScoreEl = document.getElementById('high-score');
+    const overlay = document.getElementById('overlay');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayMsg = document.getElementById('overlay-msg');
+    const startBtn = document.getElementById('start-btn');
+
+    highScoreEl.innerText = highScore;
+
+    for (let i = 0; i < bodyLength; i++) {
+        const node = document.createElement('div');
+        node.className = 'snake-node';
+        node.style.display = 'none';
+        board.appendChild(node);
+        snakeBody.push({ el: node, x: 200, y: 200 });
+    }
+
+    board.addEventListener('mousemove', (e) => {
+        const rect = board.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+    });
+
+    function startGame() {
+        score = 0;
+        wrongCount = 0;
+        snakeSpeed = 0.05;
+        scoreEl.innerText = score;
+        wrongsEl.innerText = `${wrongCount}/2`;
+        
+        overlay.style.display = 'none';
+        snakeHead.style.display = 'block';
+        snakeBody.forEach(node => node.el.style.display = 'block');
+
+        const rect = board.getBoundingClientRect();
+        mouseX = rect.width / 2;
+        mouseY = rect.height / 2;
+        snakeX = mouseX;
+        snakeY = mouseY;
+
+        isPlaying = true;
+        nextQuestion();
+        gameLoop();
+    }
+
+    function nextQuestion() {
+        clearFoods();
+        const randomIndex = Math.floor(Math.random() * questionBank.length);
+        currentQuestion = questionBank[randomIndex];
+        questionEl.innerText = currentQuestion.q;
+
+        const answers = [
+            { text: currentQuestion.correct, isCorrect: true },
+            ...currentQuestion.wrongs.map(w => ({ text: w, isCorrect: false }))
+        ].sort(() => Math.random() - 0.5);
+
+        const boardWidth = board.clientWidth;
+        const boardHeight = board.clientHeight;
+        const padding = 60;
+
+        answers.forEach((ans) => {
+            const food = document.createElement('div');
+            food.className = 'food-item';
+            food.innerText = ans.text;
+            food.dataset.isCorrect = ans.isCorrect;
+
+            let posX, posY, collision;
+            let attempts = 0;
             
-            q.answers.forEach((ans, index) => {
-                const btn = document.createElement("button");
-                btn.innerText = ans;
-                btn.style.display = "block";
-                btn.style.width = "100%";
-                btn.style.margin = "5px 0";
-                btn.onclick = () => checkAnswer(index, q.correct);
-                answerButtons.appendChild(btn);
-            });
-        }
+            do {
+                collision = false;
+                posX = Math.random() * (boardWidth - padding * 2) + padding;
+                posY = Math.random() * (boardHeight - padding * 2) + padding;
 
-        function checkAnswer(selected, correct) {
-            if (selected === correct) {
-                alert("Chính xác! 🎉");
-            } else {
-                alert("Sai rồi! ❌");
-            }
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                showQuestion();
-            } else {
-                questionBox.innerHTML = "<h3>Bạn đã hoàn thành trò chơi! 🏆</h3>";
-                answerButtons.innerHTML = "";
-            }
-        }
+                for (let existing of foodElements) {
+                    const exX = parseFloat(existing.style.left);
+                    const exY = parseFloat(existing.style.top);
+                    const dist = Math.hypot(posX - exX, posY - exY);
+                    if (dist < 100) {
+                        collision = true;
+                        break;
+                    }
+                }
+                attempts++;
+            } while (collision && attempts < 100);
 
-        // Khởi chạy câu hỏi đầu tiên khi mở trang web
-        showQuestion();
-    </script>
+            food.style.left = `${posX}px`;
+            food.style.top = `${posY}px`;
+
+            board.appendChild(food);
+            foodElements.push(food);
+        });
+    }
+
+    function clearFoods() {
+        foodElements.forEach(el => el.remove());
+        foodElements = [];
+    }
+
+    function gameLoop() {
+        if (!isPlaying) return;
+
+        snakeX += (mouseX - snakeX) * snakeSpeed;
+        snakeY += (mouseY - snakeY) * snakeSpeed;
+
+        snakeHead.style.left = `${snakeX}px`;
+        snakeHead.style.top = `${snakeY}px`;
+
+        let prevX = snakeX;
+        let prevY = snakeY;
+
+        snakeBody.forEach((node) => {
+            node.x += (prevX - node.x) * 0.4;
+            node.y += (prevY - node.y) * 0.4;
+            node.el.style.left = `${node.x}px`;
+            node.el.style.top = `${node.y}px`;
+            prevX = node.x;
+            prevY = node.y;
+        });
+
+        foodElements.forEach((food) => {
+            const foodX = parseFloat(food.style.left);
+            const foodY = parseFloat(food.style.top);
+            const dist = Math.hypot(snakeX - foodX, snakeY - foodY);
+
+            if (dist < 32) {
+                const isCorrect = food.dataset.isCorrect === 'true';
+                if (isCorrect) {
+                    score++;
+                    scoreEl.innerText = score;
+                    snakeSpeed = Math.min(0.15, snakeSpeed + 0.005);
+                    
+                    if (score > highScore) {
+                        highScore = score;
+                        highScoreEl.innerText = highScore;
+                        localStorage.setItem('snake_physics_highscore', highScore);
+                    }
+                    nextQuestion();
+                } else {
+                    wrongCount++;
+                    wrongsEl.innerText = `${wrongCount}/2`;
+                    
+                    if (wrongCount >= 2) {
+                        endGame();
+                    } else {
+                        nextQuestion();
+                    }
+                }
+            }
+        });
+
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+        isPlaying = false;
+        cancelAnimationFrame(animationFrameId);
+        clearFoods();
+
+        snakeHead.style.display = 'none';
+        snakeBody.forEach(node => node.el.style.display = 'none');
+
+        overlayTitle.innerText = "Trò chơi kết thúc!";
+        overlayMsg.innerText = `Bạn đã chọn sai quá 2 lần.\nĐiểm đạt được: ${score}`;
+        startBtn.innerText = "Chơi lại";
+        overlay.style.display = 'flex';
+    }
+</script>
 
 </body>
 </html>
+
