@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Vật Lý 10</title>
+    <style>
+        /* CSS trang trí game ở đây (tuỳ chỉnh giao diện cho đẹp) */
+        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f9; padding: 20px; }
+        .game-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        button { background: #5c6bc0; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h2>Game Vận Dụng Vật Lý 10</h2>
+        <div id="question-box">Đang tải câu hỏi...</div>
+        <div id="answer-buttons"></div>
+        <button id="next-btn" onclick="nextQuestion()">Câu tiếp theo</button>
+    </div>
+
+    <script>
+        // 1. NHÚNG TRỰC TIẾP CÂU HỎI VÀO ĐÂY (Không cần gọi file ngoài)
+        const questions = [
+            {
+                question: "Câu 1: Chuyển động cơ là gì?",
+                answers: ["Sự thay đổi vị trí của vật này so với vật khác theo thời gian", "Sự thay đổi hình dạng của vật", "Sự đứng yên của vật", "Cả 3 ý trên đều sai"],
+                correct: 0
+            },
+            {
+                question: "Câu 2: Vận tốc tức thời cho biết điều gì?",
+                answers: ["Quãng đường đi được", "Tốc độ nhanh hay chậm tại một thời điểm", "Hướng chuyển động", "Cả tốc độ và hướng chuyển động"],
+                correct: 3
+            }
+            // Bạn có thể thêm nhiều câu hỏi nữa vào đây...
+        ];
+
+        let currentQuestionIndex = 0;
+        const questionBox = document.getElementById("question-box");
+        const answerButtons = document.getElementById("answer-buttons");
+
+        function showQuestion() {
+            let q = questions[currentQuestionIndex];
+            questionBox.innerHTML = `<h3>${q.question}</h3>`;
+            answerButtons.innerHTML = "";
+            
+            q.answers.forEach((ans, index) => {
+                const btn = document.createElement("button");
+                btn.innerText = ans;
+                btn.style.display = "block";
+                btn.style.width = "100%";
+                btn.style.margin = "5px 0";
+                btn.onclick = () => checkAnswer(index, q.correct);
+                answerButtons.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct) {
+            if (selected === correct) {
+                alert("Chính xác! 🎉");
+            } else {
+                alert("Sai rồi! ❌");
+            }
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                questionBox.innerHTML = "<h3>Bạn đã hoàn thành trò chơi! 🏆</h3>";
+                answerButtons.innerHTML = "";
+            }
+        }
+
+        // Khởi chạy câu hỏi đầu tiên khi mở trang web
+        showQuestion();
+    </script>
+
+</body>
+</html>
